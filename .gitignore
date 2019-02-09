@@ -1,0 +1,10 @@
+####-*.patch
+*.pyc
+*.swp
+build/
+dist/
+packages
+.idea/
+.venv/
+venv/
+__pycache__/
