@@ -1,7 +1,7 @@
 import json
 
 
-class TxTennaTransactionSegment:
+class TxTennaSegment:
 
     def __init__(self, payload_id, payload, tx_hash=None, sequence_num=0, testnet=False, segment_count=None):
         self.segment_count = segment_count
