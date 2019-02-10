@@ -4,7 +4,7 @@ import pytest
 from txtenna_segment import TxTennaSegment
 
 
-class TestTxTennaTransactionSegment:
+class TestTxTennaSegment:
 
     def test_constructor_defaults(self):
         segment = TxTennaSegment("1000", "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc")
@@ -16,35 +16,34 @@ class TestTxTennaTransactionSegment:
         assert segment.segment_count is None
 
     def test_str(self):
-        segment = TxTennaSegment("1000", "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc", \
+        segment = TxTennaSegment("1000", "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc",
                                  tx_hash="123abc", testnet=False, segment_count=1, sequence_num=0)
         segment_str = str(segment)
         assert segment_str == "Tx 123abc Part 0"
 
     def test_repr(self):
-
-        segment = TxTennaSegment("1000", "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc", \
+        segment = TxTennaSegment("1000", "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc",
                                  tx_hash="123abc", testnet=False, segment_count=1, sequence_num=0)
 
         segment_repr = repr(segment)
         assert segment_repr == '{"i": "1000", "t": "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc", "s": 1, "h": "123abc"}'
 
     def test_serialize_first_segment(self):
-        segment = TxTennaSegment("1000", "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc", \
+        segment = TxTennaSegment("1000", "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc",
                                  tx_hash="123abc", testnet=False, segment_count=1, sequence_num=0)
 
         json_ser = segment.serialize_to_json()
         assert json_ser == '{"i": "1000", "t": "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc", "s": 1, "h": "123abc"}'
 
     def test_serialize_non_first_segment(self):
-        segment = TxTennaSegment("1000", "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc", \
+        segment = TxTennaSegment("1000", "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc",
                                  tx_hash="123abc", testnet=False, segment_count=2, sequence_num=1)
 
         json_ser = segment.serialize_to_json()
         assert json_ser == '{"i": "1000", "t": "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc", "c": 1}'
 
     def test_serialize_testnet_segment(self):
-        segment = TxTennaSegment("1000", "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc", \
+        segment = TxTennaSegment("1000", "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc",
                                  tx_hash="123abc", testnet=True, segment_count=2, sequence_num=1)
 
         json_ser = segment.serialize_to_json()
@@ -93,4 +92,3 @@ class TestTxTennaTransactionSegment:
         json_ser = '{"i": "1000", "t": "w]8f<vRG}fayY4]vRG}fayYm#vRG}fayYnc", "c": 1, "s": 2}'
         json_obj = json.loads(json_ser)
         assert not TxTennaSegment.segment_json_is_valid(json_obj)
-
