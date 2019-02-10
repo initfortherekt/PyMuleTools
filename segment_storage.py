@@ -27,7 +27,7 @@ class SegmentStorage:
             payload = self.__payloads[segment.payload_id]
             payload.append(segment)
             if segment.sequence_num+1 != len(payload):
-                self.payloads[segment.payload_id].sort(key=lambda p: p.sequence_num)
+                self.__payloads[segment.payload_id].sort(key=lambda p: p.sequence_num)
         else:
             self.__payloads[segment.payload_id] = [segment]
 
@@ -37,7 +37,7 @@ class SegmentStorage:
     def is_complete(self, payload_id):
         segments = self.get(payload_id)
         if segments is not None:
-            segment = next((s for s in segments if s.segment_count is not None), [None])
+            segment = next((s for s in segments if s.segment_count is not None), None)
             return segment is not None and segment.segment_count == len(segments)
 
         return False
