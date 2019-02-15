@@ -1,15 +1,15 @@
 import json
 
 
-class TxTennaSegment:
+class TxSegment:
 
-    def __init__(self, payload_id, payload, tx_hash=None, sequence_num=0, testnet=False, segment_count=None):
+    def __init__(self, payload_id, tx_data, sequence_num=0, tx_hash=None, testnet=False, segment_count=None):
         self.segment_count = segment_count
         self.tx_hash = tx_hash
         self.payload_id = payload_id
         self.testnet = testnet
         self.sequence_num = sequence_num
-        self.payload = payload
+        self.tx_data = tx_data
 
     def __str__(self):
         return f"Tx {self.tx_hash} Part {self.sequence_num}"
@@ -20,7 +20,7 @@ class TxTennaSegment:
     def serialize_to_json(self):
         data = {
             "i": self.payload_id,
-            "t": self.payload
+            "t": self.tx_data
         }
 
         if self.sequence_num > 0:
@@ -30,8 +30,7 @@ class TxTennaSegment:
             data["s"] = self.segment_count
             data["h"] = self.tx_hash
 
-        if self.testnet:
-            data["n"] = "t"
+        data["n"] = "t" if self.testnet else "m"
 
         return json.dumps(data)
 
@@ -59,11 +58,12 @@ class TxTennaSegment:
         # Optional network flag
         testnet = True if "n" in data and data["n"] == "t" else False
 
-        return cls( payload_id, payload, tx_hash=tx_hash, sequence_num=sequence_num, testnet=testnet, segment_count=segment_count)
+        return cls(payload_id, payload, tx_hash=tx_hash, sequence_num=sequence_num, testnet=testnet, segment_count=segment_count)
 
     @classmethod
     def segment_json_is_valid(cls, data):
         return ("i" in data and "t" in data and
+                ("n" not in data or ("n" in data and (data["n"] == "m" or data["n"] == "t"))) and
                 (
                         ("s" in data and "h" in data and ("c" not in data or ("c" in data and data["c"] == 0)))
                         or

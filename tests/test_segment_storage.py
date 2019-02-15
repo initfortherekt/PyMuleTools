@@ -1,22 +1,22 @@
 import pytest
-from txtenna_segment import TxTennaSegment
+from txtenna_segment import TxSegment
 from segment_storage import SegmentStorage
 
 
 @pytest.fixture()
 def segments():
-    payload1seg1 = TxTennaSegment("1000", "ra]?=rb3hXB09d)awc6WatLS8ir", tx_hash="abc123", sequence_num=0,
-                                  segment_count=3, testnet=False)
-    payload1seg2 = TxTennaSegment("1000", "lUG[Cv}xE)z/M$szxIn^x(mX", sequence_num=1, testnet=False)
-    payload1seg3 = TxTennaSegment("1000", "z!pa<wN/T@wfsiEx(4ZgBrCglAV^XSzFKp", sequence_num=2, testnet=False)
+    payload1seg1 = TxSegment("1000", "ra]?=rb3hXB09d)awc6WatLS8ir", tx_hash="abc123", sequence_num=0,
+                             segment_count=3, testnet=False)
+    payload1seg2 = TxSegment("1000", "lUG[Cv}xE)z/M$szxIn^x(mX", sequence_num=1, testnet=False)
+    payload1seg3 = TxSegment("1000", "z!pa<wN/T@wfsiEx(4ZgBrCglAV^XSzFKp", sequence_num=2, testnet=False)
 
-    payload2seg1 = TxTennaSegment("1001", "ra]?=B9z5kz6iLlazts{wmYo]Bz(wiA+6klB-N", tx_hash="def456",
-                                  sequence_num=0,
-                                  segment_count=2, testnet=False)
+    payload2seg1 = TxSegment("1001", "ra]?=B9z5kz6iLlazts{wmYo]Bz(wiA+6klB-N", tx_hash="def456",
+                             sequence_num=0,
+                             segment_count=2, testnet=False)
 
-    payload3seg2 = TxTennaSegment("1002",
+    payload3seg2 = TxSegment("1002",
                                   "vS==nBzbkdxLzKfz/QaCz!pb7x<(9av%8*jwO#0(wPF#dB0b7qy?$kjw/$M6wNP7ZwPF#jw/#hevrrSlA=(CB",
-                                  sequence_num=1, testnet=False)
+                             sequence_num=1, testnet=False)
 
     # payload3seg1 = "ra]?=v}xL1A:-=bvQTd&az(mxBrC47aARTDB97#7az#ataARJAwmYjUB7DFoxK@q@B-IIlzEW@y"
 
@@ -58,15 +58,15 @@ class TestSegmentStorage:
         segments.remove("9999")
 
     def test_put_new_payload(self, segments):
-        sg = TxTennaSegment("1004", "the payload data for segment 0", tx_hash="789fff", sequence_num=0, segment_count=3)
+        sg = TxSegment("1004", "the payload data for segment 0", tx_hash="789fff", sequence_num=0, segment_count=3)
         segments.put(sg)
         gsg = segments.get("1004")
         assert gsg is not None
         assert gsg[0].tx_hash == "789fff"
 
     def test_put_new_payload_out_of_order(self, segments):
-        sg0 = TxTennaSegment("1005", "the payload data for segment 0", tx_hash="eeeeee", sequence_num=0, segment_count=3)
-        sg1 = TxTennaSegment("1005", "the payload data for segment 1", sequence_num=1)
+        sg0 = TxSegment("1005", "the payload data for segment 0", tx_hash="eeeeee", sequence_num=0, segment_count=3)
+        sg1 = TxSegment("1005", "the payload data for segment 1", sequence_num=1)
         segments.put(sg1)
         segments.put(sg0)
         gsg = segments.get("1005")
@@ -87,8 +87,4 @@ class TestSegmentStorage:
 
     def test_is_complete_when_complete(self, segments):
         assert segments.is_complete("1000")
-
-
-
-
 

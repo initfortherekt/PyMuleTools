@@ -1,4 +1,4 @@
-from txtenna_segment import TxTennaSegment
+from txtenna_segment import TxSegment
 
 
 class SegmentStorage:
@@ -22,7 +22,7 @@ class SegmentStorage:
                     break
             del self.__payloads[payload_id]
 
-    def put(self, segment: TxTennaSegment):
+    def put(self, segment: TxSegment):
         if segment.payload_id in self.__payloads:
             payload = self.__payloads[segment.payload_id]
             payload.append(segment)
