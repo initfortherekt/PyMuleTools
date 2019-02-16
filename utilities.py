@@ -1,5 +1,10 @@
 import random
 import string
+from hashlib import sha256
+
+
+def hash256(payload):
+    return sha256(sha256(payload).digest()).digest()[::-1]
 
 
 def get_message_id(id_length=8):

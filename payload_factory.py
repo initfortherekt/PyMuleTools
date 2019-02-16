@@ -1,6 +1,7 @@
 from hashlib import sha256
 from txtenna_segment import TxSegment
 from z85 import is_z85, decode, encode
+from utilities import hash256
 
 # from bitcoin.core import CTransaction
 
@@ -44,7 +45,10 @@ class PayloadFactory:
         for i, segment in enumerate(sorted(segments, key=lambda s: s.sequence_num)):
             raise_error_if_missing_segments(i, segment, segments_length)
             if segment.sequence_num == 0:
-                tx_hash = decode(segment.tx_hash) if is_z85(segment.tx_hash) else bytes.fromhex(segment.tx_hash)
+                if is_z85(segment.tx_hash):
+                    tx_hash = decode(segment.tx_hash)
+                else:
+                    tx_hash = bytes.fromhex(segment.tx_hash)
             tx += segment.tx_data
 
         decoded_tx = decode(tx) if is_z85(tx) else bytes.fromhex(tx)
@@ -54,29 +58,42 @@ class PayloadFactory:
         return decoded_tx
 
     @staticmethod
-    def to_segments(tx, payload_id, is_gotenna=True, use_z85=True, is_testnet=False):
+    def to_segments(tx: bytes, payload_id: str, is_gotenna: bool = True, use_z85: bool = True,
+                    is_testnet: bool = False):
+
+        def get_segment_lengths():
+            if is_gotenna:
+                segment_0_length = GOTENNA_SEGMENT_0_LEN
+                segment_m_length = GOTENNA_SEGMENT_1_LEN
+            else:
+                segment_0_length = SMS_SEGMENT_0_LEN
+                segment_m_length = SMS_SEGMENT_1_LEN
+
+            if use_z85:
+                segment_0_length += 24
+
+            return (segment_0_length, segment_m_length)
+
+        def get_tx_raw_data():
+            if use_z85:
+                tx_encoded = encode(tx)
+                hash = encode(bytes.fromhex(hash256(tx).hex()))
+            else:
+                tx_encoded = tx.hex()
+                hash = hash256(tx).hex()
+            return tx_encoded, hash
+
+        segment_0_length, segment_m_length = get_segment_lengths()
+        tx_raw, tx_hash = get_tx_raw_data()
+
         segments = []
-        tx_raw = tx.hex()
-        tx_hash = sha256(sha256(tx).digest()).digest()[::-1].hex()
-
-        segment_0_length = GOTENNA_SEGMENT_0_LEN if is_gotenna else SMS_SEGMENT_0_LEN
-        segment_m_length = GOTENNA_SEGMENT_1_LEN if is_gotenna else SMS_SEGMENT_1_LEN
-        segment_n_length = 0
-
-        if use_z85:
-            segment_0_length += 24
-            tx_raw = encode(tx)
-            tx_hash = encode(bytes.fromhex(tx_hash))
-
         raw_tx_length = len(tx_raw)
         segment_count = 1
 
         if raw_tx_length > segment_0_length:
             raw_tx_length -= segment_0_length
             quotient, remainder = divmod(raw_tx_length, segment_m_length)
-            segment_count += quotient + (1 if remainder > 0 else 0)
-            segment_n_length = remainder
-
+            segment_count += quotient + int(remainder > 0)
         else:
             segment_0_length = raw_tx_length
 
@@ -88,8 +105,12 @@ class PayloadFactory:
                 segments.append(seg_0)
             else:
                 tx_raw_index = segment_0_length + (i - 1) * segment_m_length
-                segment_length = tx_raw_index + (segment_m_length if i < segment_count - 1 else segment_n_length)
-                tx_data = tx_raw[tx_raw_index:segment_length]
+
+                if i < segment_count - 1:
+                    tx_data = tx_raw[tx_raw_index:tx_raw_index + segment_m_length]
+                else:
+                    tx_data = tx_raw[tx_raw_index:]
+
                 seg = TxSegment(payload_id, tx_data, i)
                 segments.append(seg)
 

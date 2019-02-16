@@ -30,7 +30,10 @@ class TxSegment:
             data["s"] = self.segment_count
             data["h"] = self.tx_hash
 
-        data["n"] = "t" if self.testnet else "m"
+        if self.testnet:
+            data["n"] = "t"
+        else:
+            data["n"] = "m"
 
         return json.dumps(data)
 
@@ -49,14 +52,27 @@ class TxSegment:
         payload = data["t"]
 
         # Tail segments
-        sequence_num = data["c"] if "c" in data else 0
+        if "c" in data:
+            sequence_num = data["c"]
+        else:
+            sequence_num = 0
 
         # Head segments
-        segment_count = data["s"] if "s" in data else None
-        tx_hash = data["h"] if "h" in data else None
+        if "s" in data:
+            segment_count = data["s"]
+        else:
+            segment_count = None
+
+        if "h" in data:
+            tx_hash = data["h"]
+        else:
+            tx_hash = None
 
         # Optional network flag
-        testnet = True if "n" in data and data["n"] == "t" else False
+        if "n" in data and data["n"] == "t":
+            testnet = True 
+        else:
+            testnet = False
 
         return cls(payload_id, payload, tx_hash=tx_hash, sequence_num=sequence_num, testnet=testnet, segment_count=segment_count)
 
